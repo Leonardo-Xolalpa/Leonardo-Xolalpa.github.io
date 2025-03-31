@@ -3,68 +3,67 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Obtener y Guardar Ubicación</title>
+    <title>Ubicación Automática</title>
 </head>
 <body>
-    <h1>Obtener y Guardar Ubicación</h1>
-    <button onclick="getLocation()">Obtener y Guardar Ubicación</button>
-    <p id="status"></p>
+    <h1>Ubicación Automática</h1>
+    <p id="status">Cargando ubicación...</p>
 
     <script>
         // Verifica si el navegador soporta la geolocalización
-        function getLocation() {
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(
-                    function(position) {
-                        // Obtiene las coordenadas
-                        var lat = position.coords.latitude;
-                        var lng = position.coords.longitude;
-                        var coordinates = lat + ", " + lng;
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                function(position) {
+                    // Obtiene las coordenadas
+                    var lat = position.coords.latitude;
+                    var lng = position.coords.longitude;
+                    var coordinates = lat + ", " + lng;
 
-                        // Muestra el estado
-                        document.getElementById('status').innerText = "Ubicación obtenida: " + coordinates;
+                    // Muestra el estado
+                    document.getElementById('status').innerText = "Ubicación obtenida: " + coordinates;
 
-                        // Llama a la función de Apps Script para guardar la ubicación
-                        const url = 'https://script.google.com/macros/s/AKfycbxs-NLy1PpyVUAkte8Zu10Yn62uNh_3lsPN_9Q-Pd2EzhkrgqJxE7A9WNQLOSdTGrk/exec'; // Reemplaza con tu URL de la Web App
-                        const datos = { direccion: coordinates };
+                    // Llama a la función de Apps Script para guardar la ubicación
+                    const url = 'https://script.google.com/macros/s/AKfycbxs-NLy1PpyVUAkte8Zu10Yn62uNh_3lsPN_9Q-Pd2EzhkrgqJxE7A9WNQLOSdTGrk/exec'; // Reemplaza con tu URL de la Web App
+                    const datos = { direccion: coordinates };
 
-                        fetch(url, {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'Accept': 'application/json',
-                            },
-                            body: JSON.stringify(datos)
-                        })
-                        .then(response => response.json())
-                        .then(result => {
-                            document.getElementById('status').innerText += '\n' + result; // Muestra el resultado
-                        })
-                        .catch(error => {
-                            document.getElementById('status').innerText = 'Error al guardar la ubicación: ' + error;
-                        });
-                    },
-                    function(error) {
-                        switch (error.code) {
-                            case error.PERMISSION_DENIED:
-                                document.getElementById('status').innerText = "Error: Permiso de ubicación denegado.";
-                                break;
-                            case error.POSITION_UNAVAILABLE:
-                                document.getElementById('status').innerText = "Error: La ubicación no está disponible.";
-                                break;
-                            case error.TIMEOUT:
-                                document.getElementById('status').innerText = "Error: La solicitud de geolocalización ha expirado.";
-                                break;
-                            case error.UNKNOWN_ERROR:
-                                document.getElementById('status').innerText = "Error: Se produjo un error desconocido.";
-                                break;
-                        }
+                    fetch(url, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json',
+                        },
+                        body: JSON.stringify(datos)
+                    })
+                    .then(response => response.json())
+                    .then(result => {
+                        document.getElementById('status').innerText += '\n' + result; // Muestra el resultado
+                    })
+                    .catch(error => {
+                        document.getElementById('status').innerText = 'Error al guardar la ubicación: ' + error;
+                    });
+                },
+                function(error) {
+                    switch (error.code) {
+                        case error.PERMISSION_DENIED:
+                            document.getElementById('status').innerText = "Error: Permiso de ubicación denegado.";
+                            break;
+                        case error.POSITION_UNAVAILABLE:
+                            document.getElementById('status').innerText = "Error: La ubicación no está disponible.";
+                            break;
+                        case error.TIMEOUT:
+                            document.getElementById('status').innerText = "Error: La solicitud de geolocalización ha expirado.";
+                            break;
+                        case error.UNKNOWN_ERROR:
+                            document.getElementById('status').innerText = "Error: Se produjo un error desconocido.";
+                            break;
                     }
-                );
-            } else {
-                document.getElementById('status').innerText = "Error: La geolocalización no es soportada por este navegador.";
-            }
+                }
+            );
+        } else {
+            document.getElementById('status').innerText = "Error: La geolocalización no es soportada por este navegador.";
         }
     </script>
 </body>
 </html>
+
+
