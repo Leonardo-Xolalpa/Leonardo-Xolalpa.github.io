@@ -3,12 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ubicación Automática</title>
+    <title>Ubicación del Usuario</title>
 </head>
 <body>
-    <h1>Ubicación Automática</h1>
-    <p id="status">Cargando ubicación...</p>
-
     <script>
         // Verifica si el navegador soporta la geolocalización
         if (navigator.geolocation) {
@@ -19,51 +16,23 @@
                     var lng = position.coords.longitude;
                     var coordinates = lat + ", " + lng;
 
-                    // Muestra el estado
-                    document.getElementById('status').innerText = "Ubicación obtenida: " + coordinates;
+                    // Muestra las coordenadas en la consola
+                    console.log("Ubicación obtenida: " + coordinates);
 
-                    // Llama a la función de Apps Script para guardar la ubicación
-                    const url = 'https://script.google.com/macros/s/AKfycbxs-NLy1PpyVUAkte8Zu10Yn62uNh_3lsPN_9Q-Pd2EzhkrgqJxE7A9WNQLOSdTGrk/exec'; // Reemplaza con tu URL de la Web App
-                    const datos = { direccion: coordinates };
-
-                    fetch(url, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Accept': 'application/json',
-                        },
-                        body: JSON.stringify(datos)
-                    })
-                    .then(response => response.json())
-                    .then(result => {
-                        document.getElementById('status').innerText += '\n' + result; // Muestra el resultado
-                    })
-                    .catch(error => {
-                        document.getElementById('status').innerText = 'Error al guardar la ubicación: ' + error;
-                    });
+                    // Opcional: Muestra las coordenadas en la página
+                    document.body.innerHTML = "Tus coordenadas son: " + coordinates;
                 },
                 function(error) {
-                    switch (error.code) {
-                        case error.PERMISSION_DENIED:
-                            document.getElementById('status').innerText = "Error: Permiso de ubicación denegado.";
-                            break;
-                        case error.POSITION_UNAVAILABLE:
-                            document.getElementById('status').innerText = "Error: La ubicación no está disponible.";
-                            break;
-                        case error.TIMEOUT:
-                            document.getElementById('status').innerText = "Error: La solicitud de geolocalización ha expirado.";
-                            break;
-                        case error.UNKNOWN_ERROR:
-                            document.getElementById('status').innerText = "Error: Se produjo un error desconocido.";
-                            break;
-                    }
+                    console.error("Error al obtener la ubicación: " + error.message);
+                    // Opcional: Muestra un mensaje de error en la página
+                    document.body.innerHTML = "No se pudo obtener la ubicación.";
                 }
             );
         } else {
-            document.getElementById('status').innerText = "Error: La geolocalización no es soportada por este navegador.";
+            console.error("La geolocalización no es soportada por este navegador.");
+            // Opcional: Muestra un mensaje en la página
+            document.body.innerHTML = "La geolocalización no es soportada por este navegador.";
         }
     </script>
 </body>
 </html>
-
-
