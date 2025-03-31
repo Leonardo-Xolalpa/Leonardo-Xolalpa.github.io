@@ -19,7 +19,7 @@
           document.getElementById('status').innerText = "Ubicación obtenida: " + coordinates;
 
           // Llama a tu web app de Apps Script usando fetch
-          fetch("https://script.google.com/macros/s/1MZPK9A26kZoqop3SIFqWPUBFv4Ub5B7MzHNtvkKxZoI/exec?direccion=" + encodeURIComponent(coordinates))
+          fetch("https://script.google.com/macros/s/AKfycbxs-NLy1PpyVUAkte8Zu10Yn62uNh_3lsPN_9Q-Pd2EzhkrgqJxE7A9WNQLOSdTGrk/exec" + encodeURIComponent(coordinates))
             .then(response => response.text())
             .then(result => {
               document.getElementById('status').innerText += "\n" + result;
