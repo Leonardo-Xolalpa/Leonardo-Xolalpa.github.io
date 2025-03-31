@@ -4,41 +4,45 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Obtener y Guardar Ubicación</title>
+  <style>
+    body { font-family: Arial, sans-serif; }
+    #status { margin-top: 10px; }
+  </style>
 </head>
 <body>
+
   <h1>Obtener y Guardar Ubicación</h1>
-  <button onclick="obtenerYGuardarUbicacion()">Obtener y Guardar Ubicación</button>
-  <p id="status">Esperando...</p>
+  <button onclick="obtenerUbicacion()">Obtener y Guardar Ubicación</button>
+  <div id="status"></div>
 
   <script>
-    // URL de tu Web App de Google Apps Script (cópiala desde el despliegue de la Web App)
-    const url = 'https://script.google.com/macros/s/AKfycbxs-NLy1PpyVUAkte8Zu10Yn62uNh_3lsPN_9Q-Pd2EzhkrgqJxE7A9WNQLOSdTGrk/exec';
+    // Reemplaza con la URL de tu Web App generada en Google Apps Script
+    const url = 'TU_URL_DE_WEB_APP_AQUI';
 
-    // Función para obtener la ubicación y enviarla a la Web App
-    function obtenerYGuardarUbicacion() {
+    function obtenerUbicacion() {
+      // Verifica si el navegador soporta la geolocalización
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
           function(position) {
             // Obtiene las coordenadas
             var lat = position.coords.latitude;
             var lng = position.coords.longitude;
-            var coordinates = lat + ', ' + lng;
+            var coordinates = lat + ", " + lng;
 
-            // Muestra la ubicación en la página
-            document.getElementById('status').innerText = 'Ubicación obtenida: ' + coordinates;
+            // Muestra el estado
+            document.getElementById('status').innerText = "Ubicación obtenida: " + coordinates;
 
-            // Prepara los datos a enviar
+            // Enviar los datos a la Web App
             var datos = {
               direccion: coordinates
             };
 
-            // Enviar los datos a la Web App
             fetch(url, {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
               },
-              body: JSON.stringify(datos)
+              body: JSON.stringify(datos) // Aquí aseguramos que los datos estén en formato JSON
             })
             .then(response => response.text())
             .then(result => {
@@ -51,26 +55,17 @@
           function(error) {
             switch (error.code) {
               case error.PERMISSION_DENIED:
-                document.getElementById('status').innerText = 'Error: Permiso de ubicación denegado.';
+                document.getElementById('status').innerText = "Error: Permiso de ubicación denegado.";
                 break;
               case error.POSITION_UNAVAILABLE:
-                document.getElementById('status').innerText = 'Error: La ubicación no está disponible.';
+                document.getElementById('status').innerText = "Error: La ubicación no está disponible.";
                 break;
               case error.TIMEOUT:
-                document.getElementById('status').innerText = 'Error: La solicitud de geolocalización ha expirado.';
+                document.getElementById('status').innerText = "Error: La solicitud de geolocalización ha expirado.";
                 break;
               case error.UNKNOWN_ERROR:
-                document.getElementById('status').innerText = 'Error: Se produjo un error desconocido.';
+                document.getElementById('status').innerText = "Error: Se produjo un error desconocido.";
                 break;
             }
           }
-        );
-      } else {
-        document.getElementById('status').innerText = 'Error: La geolocalización no es soportada por este navegador.';
-      }
-    }
-  </script>
-</body>
-</html>
-
 
