@@ -2,56 +2,74 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Obtener y Guardar Ubicación</title>
-  <script>
-    function obtenerUbicacion() {
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(enviarUbicacion, mostrarError);
-      } else {
-        alert("La geolocalización no es compatible con este navegador.");
-      }
-    }
-
-    function enviarUbicacion(position) {
-      const lat = position.coords.latitude;
-      const lon = position.coords.longitude;
-      const url = 'https://script.google.com/macros/s/AKfycbxs-NLy1PpyVUAkte8Zu10Yn62uNh_3lsPN_9Q-Pd2EzhkrgqJxE7A9WNQLOSdTGrk/exec'; // URL de la Web App
-      const params = {
-        method: 'POST',
-        contentType: 'application/json',
-        payload: JSON.stringify({ lat: lat, lon: lon })
-      };
-      fetch(url, params)
-        .then(response => response.json())
-        .then(data => {
-          console.log('Ubicación guardada:', data);
-        })
-        .catch(error => {
-          console.error('Error al guardar la ubicación:', error);
-        });
-    }
-
-    function mostrarError(error) {
-      switch(error.code) {
-        case error.PERMISSION_DENIED:
-          alert("Permiso denegado para acceder a la ubicación.");
-          break;
-        case error.POSITION_UNAVAILABLE:
-          alert("Información de ubicación no disponible.");
-          break;
-        case error.TIMEOUT:
-          alert("Tiempo de espera agotado para obtener la ubicación.");
-          break;
-        case error.UNKNOWN_ERROR:
-          alert("Error desconocido al obtener la ubicación.");
-          break;
-      }
-    }
-  </script>
 </head>
 <body>
   <h1>Obtener y Guardar Ubicación</h1>
-  <button onclick="obtenerUbicacion()">Obtener y Guardar Ubicación</button>
+  <button onclick="obtenerYGuardarUbicacion()">Obtener y Guardar Ubicación</button>
+  <p id="status">Esperando...</p>
+
+  <script>
+    // URL de tu Web App de Google Apps Script (cópiala desde el despliegue de la Web App)
+    const url = 'https://script.google.com/macros/s/AKfycbxs-NLy1PpyVUAkte8Zu10Yn62uNh_3lsPN_9Q-Pd2EzhkrgqJxE7A9WNQLOSdTGrk/exec';
+
+    // Función para obtener la ubicación y enviarla a la Web App
+    function obtenerYGuardarUbicacion() {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          function(position) {
+            // Obtiene las coordenadas
+            var lat = position.coords.latitude;
+            var lng = position.coords.longitude;
+            var coordinates = lat + ', ' + lng;
+
+            // Muestra la ubicación en la página
+            document.getElementById('status').innerText = 'Ubicación obtenida: ' + coordinates;
+
+            // Prepara los datos a enviar
+            var datos = {
+              direccion: coordinates
+            };
+
+            // Enviar los datos a la Web App
+            fetch(url, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify(datos)
+            })
+            .then(response => response.text())
+            .then(result => {
+              document.getElementById('status').innerText += '\n' + result; // Muestra el resultado en la página
+            })
+            .catch(error => {
+              document.getElementById('status').innerText = 'Error al guardar la ubicación: ' + error;
+            });
+          },
+          function(error) {
+            switch (error.code) {
+              case error.PERMISSION_DENIED:
+                document.getElementById('status').innerText = 'Error: Permiso de ubicación denegado.';
+                break;
+              case error.POSITION_UNAVAILABLE:
+                document.getElementById('status').innerText = 'Error: La ubicación no está disponible.';
+                break;
+              case error.TIMEOUT:
+                document.getElementById('status').innerText = 'Error: La solicitud de geolocalización ha expirado.';
+                break;
+              case error.UNKNOWN_ERROR:
+                document.getElementById('status').innerText = 'Error: Se produjo un error desconocido.';
+                break;
+            }
+          }
+        );
+      } else {
+        document.getElementById('status').innerText = 'Error: La geolocalización no es soportada por este navegador.';
+      }
+    }
+  </script>
 </body>
 </html>
 
