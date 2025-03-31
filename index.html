@@ -16,18 +16,51 @@
           var lng = position.coords.longitude;
           var coordinates = lat + ", " + lng;
 
-          document.getElementById('status').innerText = "Ubicación obtenida: " + coordinates;
+          // Obtener la dirección completa a partir de las coordenadas
+          var geocoder = new google.maps.Geocoder();
+          var latLng = new google.maps.LatLng(lat, lng);
 
-          // Llama a tu web app de Apps Script usando fetch
-          fetch("https://script.google.com/macros/s/AKfycbxs-NLy1PpyVUAkte8Zu10Yn62uNh_3lsPN_9Q-Pd2EzhkrgqJxE7A9WNQLOSdTGrk/exec" + encodeURIComponent(coordinates))
-            .then(response => response.text())
-            .then(result => {
-              document.getElementById('status').innerText += "\n" + result;
-            })
-            .catch(error => {
-              document.getElementById('status').innerText += "\nError al guardar la ubicación.";
-              console.error("Error:", error);
-            });
+          geocoder.geocode({ 'location': latLng }, function(results, status) {
+            if (status === google.maps.GeocoderStatus.OK) {
+              if (results[0]) {
+                var address = results[0].formatted_address;
+                var currentDate = new Date();
+                var dateString = currentDate.toLocaleString(); // Fecha y hora local
+
+                // Muestra la dirección, coordenadas, fecha y hora
+                document.getElementById('status').innerText = 
+                  "Dirección: " + address + "\n" +
+                  "Coordenadas: " + coordinates + "\n" +
+                  "Fecha y hora: " + dateString;
+
+                // Llama a tu web app de Apps Script usando fetch
+                fetch("https://script.google.com/macros/s/AKfycbxs-NLy1PpyVUAkte8Zu10Yn62uNh_3lsPN_9Q-Pd2EzhkrgqJxE7A9WNQLOSdTGrk/exec", {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json'
+                  },
+                  body: JSON.stringify({ 
+                    lat: lat, 
+                    lng: lng, 
+                    address: address,
+                    date: dateString 
+                  })
+                })
+                .then(response => response.text())
+                .then(result => {
+                  console.log(result);
+                })
+                .catch(error => {
+                  document.getElementById('status').innerText += "\nError al guardar la ubicación.";
+                  console.error("Error:", error);
+                });
+              } else {
+                document.getElementById('status').innerText = "No se pudo obtener la dirección.";
+              }
+            } else {
+              document.getElementById('status').innerText = "Error al obtener la dirección: " + status;
+            }
+          });
         },
         function(error) {
           switch (error.code) {
@@ -50,5 +83,9 @@
       document.getElementById('status').innerText = "Error: La geolocalización no es soportada por este navegador.";
     }
   </script>
+
+  <!-- Agrega el script de Google Maps Geocoding API -->
+  <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_GOOGLE_MAPS_API_KEY&callback=initMap" async defer></script>
 </body>
 </html>
+
