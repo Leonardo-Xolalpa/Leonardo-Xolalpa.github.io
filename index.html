@@ -1,50 +1,54 @@
 <!DOCTYPE html>
-<html lang="es">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ubicación Automática</title>
+  <title>Obtener Ubicación</title>
 </head>
 <body>
-    <script>
-        // Verifica si el navegador soporta la geolocalización
-        if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(
-                function(position) {
-                    // Obtiene las coordenadas
-                    var lat = position.coords.latitude;
-                    var lng = position.coords.longitude;
-                    var coordinates = lat + ", " + lng;
+  <h1>Obtener y Guardar Ubicación</h1>
+  <p id="status">Esperando ubicación...</p>
 
-                    // Muestra las coordenadas en la página
-                    document.body.innerHTML = "Tus coordenadas son: " + coordinates;
+  <script>
+    // Verifica si el navegador soporta la geolocalización
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        function(position) {
+          var lat = position.coords.latitude;
+          var lng = position.coords.longitude;
+          var coordinates = lat + ", " + lng;
 
-                    // Envía las coordenadas a la función de Apps Script para guardarlas en Sheets
-                    fetch('https://script.google.com/macros/s/AKfycbxs-NLy1PpyVUAkte8Zu10Yn62uNh_3lsPN_9Q-Pd2EzhkrgqJxE7A9WNQLOSdTGrk/exec', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({ lat: lat, lng: lng })
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        console.log(data);
-                    })
-                    .catch(error => {
-                        console.error('Error al guardar la ubicación:', error);
-                        document.body.innerHTML = "Error al guardar la ubicación.";
-                    });
-                },
-                function(error) {
-                    console.error("Error al obtener la ubicación:", error.message);
-                    document.body.innerHTML = "No se pudo obtener la ubicación.";
-                }
-            );
-        } else {
-            console.error("La geolocalización no es soportada por este navegador.");
-            document.body.innerHTML = "La geolocalización no es soportada por este navegador.";
+          document.getElementById('status').innerText = "Ubicación obtenida: " + coordinates;
+
+          // Llama a tu web app de Apps Script usando fetch
+          fetch("https://script.google.com/macros/s/AKfycbxs-NLy1PpyVUAkte8Zu10Yn62uNh_3lsPN_9Q-Pd2EzhkrgqJxE7A9WNQLOSdTGrk/exec" + encodeURIComponent(coordinates))
+            .then(response => response.text())
+            .then(result => {
+              document.getElementById('status').innerText += "\n" + result;
+            })
+            .catch(error => {
+              document.getElementById('status').innerText += "\nError al guardar la ubicación.";
+              console.error("Error:", error);
+            });
+        },
+        function(error) {
+          switch (error.code) {
+            case error.PERMISSION_DENIED:
+              document.getElementById('status').innerText = "Error: Permiso de ubicación denegado.";
+              break;
+            case error.POSITION_UNAVAILABLE:
+              document.getElementById('status').innerText = "Error: La ubicación no está disponible.";
+              break;
+            case error.TIMEOUT:
+              document.getElementById('status').innerText = "Error: La solicitud de geolocalización ha expirado.";
+              break;
+            case error.UNKNOWN_ERROR:
+              document.getElementById('status').innerText = "Error: Se produjo un error desconocido.";
+              break;
+          }
         }
-    </script>
+      );
+    } else {
+      document.getElementById('status').innerText = "Error: La geolocalización no es soportada por este navegador.";
+    }
+  </script>
 </body>
 </html>
