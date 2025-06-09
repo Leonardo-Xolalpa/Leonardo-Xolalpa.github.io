@@ -1,91 +1,58 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
-  <title>Obtener Ubicación</title>
+  <meta charset="UTF-8">
+  <title>Enviar Ubicación</title>
 </head>
 <body>
-  <h1>Obtener y Guardar Ubicación</h1>
-  <p id="status">Esperando ubicación...</p>
+  <h1>Enviando tu ubicación...</h1>
+  <p id="estado">Esperando ubicación del navegador...</p>
 
   <script>
-    // Verifica si el navegador soporta la geolocalización
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        function(position) {
-          var lat = position.coords.latitude;
-          var lng = position.coords.longitude;
-          var coordinates = lat + ", " + lng;
+    // 👇 Reemplaza con tu propia URL del Webhook de Google Apps Script
+    const webhookURL = "https://script.google.com/macros/s/AKfycbxs-NLy1PpyVUAkte8Zu10Yn62uNh_3lsPN_9Q-Pd2EzhkrgqJxE7A9WNQLOSdTGrk/exec";
 
-          // Obtener la dirección completa a partir de las coordenadas
-          var geocoder = new google.maps.Geocoder();
-          var latLng = new google.maps.LatLng(lat, lng);
+    function enviarUbicacion(lat, lon) {
+      const ahora = new Date();
+      const fecha = ahora.toISOString().split("T")[0]; // yyyy-mm-dd
+      const hora = ahora.toTimeString().split(" ")[0]; // hh:mm:ss
 
-          geocoder.geocode({ 'location': latLng }, function(results, status) {
-            if (status === google.maps.GeocoderStatus.OK) {
-              if (results[0]) {
-                var address = results[0].formatted_address;
-                var currentDate = new Date();
-                var dateString = currentDate.toLocaleString(); // Fecha y hora local
+      const url = `${webhookURL}?fecha=${fecha}&hora=${hora}&latitud=${lat}&longitud=${lon}`;
 
-                // Muestra la dirección, coordenadas, fecha y hora
-                document.getElementById('status').innerText = 
-                  "Dirección: " + address + "\n" +
-                  "Coordenadas: " + coordinates + "\n" +
-                  "Fecha y hora: " + dateString;
-
-                // Llama a tu web app de Apps Script usando fetch
-                fetch("https://script.google.com/macros/s/AKfycbxs-NLy1PpyVUAkte8Zu10Yn62uNh_3lsPN_9Q-Pd2EzhkrgqJxE7A9WNQLOSdTGrk/exec", {
-                  method: 'POST',
-                  headers: {
-                    'Content-Type': 'application/json'
-                  },
-                  body: JSON.stringify({ 
-                    lat: lat, 
-                    lng: lng, 
-                    address: address,
-                    date: dateString 
-                  })
-                })
-                .then(response => response.text())
-                .then(result => {
-                  console.log(result);
-                })
-                .catch(error => {
-                  document.getElementById('status').innerText += "\nError al guardar la ubicación.";
-                  console.error("Error:", error);
-                });
-              } else {
-                document.getElementById('status').innerText = "No se pudo obtener la dirección.";
-              }
-            } else {
-              document.getElementById('status').innerText = "Error al obtener la dirección: " + status;
-            }
-          });
-        },
-        function(error) {
-          switch (error.code) {
-            case error.PERMISSION_DENIED:
-              document.getElementById('status').innerText = "Error: Permiso de ubicación denegado.";
-              break;
-            case error.POSITION_UNAVAILABLE:
-              document.getElementById('status').innerText = "Error: La ubicación no está disponible.";
-              break;
-            case error.TIMEOUT:
-              document.getElementById('status').innerText = "Error: La solicitud de geolocalización ha expirado.";
-              break;
-            case error.UNKNOWN_ERROR:
-              document.getElementById('status').innerText = "Error: Se produjo un error desconocido.";
-              break;
-          }
-        }
-      );
-    } else {
-      document.getElementById('status').innerText = "Error: La geolocalización no es soportada por este navegador.";
+      fetch(url)
+        .then(res => {
+          if (!res.ok) throw new Error("Respuesta no OK");
+          return res.text();
+        })
+        .then(data => {
+          document.getElementById("estado").innerText = "Ubicación enviada correctamente.";
+        })
+        .catch(err => {
+          console.warn("La ubicación se envió pero ocurrió un error con la respuesta:", err);
+          document.getElementById("estado").innerText = "Ubicación enviada (con advertencia).";
+        });
     }
-  </script>
 
-  <!-- Agrega el script de Google Maps Geocoding API -->
-  <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_GOOGLE_MAPS_API_KEY&callback=initMap" async defer></script>
+    function pedirUbicacion() {
+      if ("geolocation" in navigator) {
+        navigator.geolocation.getCurrentPosition(
+          pos => {
+            const lat = pos.coords.latitude;
+            const lon = pos.coords.longitude;
+            document.getElementById("estado").innerText = `Ubicación obtenida: ${lat}, ${lon}`;
+            enviarUbicacion(lat, lon);
+          },
+          err => {
+            document.getElementById("estado").innerText = "Error al obtener ubicación: " + err.message;
+          }
+        );
+      } else {
+        document.getElementById("estado").innerText = "Tu navegador no soporta geolocalización.";
+      }
+    }
+
+    // Ejecutar automáticamente
+    pedirUbicacion();
+  </script>
 </body>
 </html>
-
